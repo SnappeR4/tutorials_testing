@@ -2,8 +2,8 @@ const Banner   = require('../models/Banner')
 // Banner Controller
 const addBanner = async (req, res) => {
     try {
-        const { type, link } = req.body;
-        const banner = new Banner({ type, link });
+        const { type, link, isActive } = req.body;
+        const banner = new Banner({ type, link, isActive });
         await banner.save();
         res.json({ message: 'Banner added successfully!', banner });
     } catch (error) {
@@ -14,8 +14,8 @@ const addBanner = async (req, res) => {
 const editBanner = async (req, res) => {
     try {
         const { id } = req.query;
-        const { type, link } = req.body;
-        const banner = await Banner.findByIdAndUpdate(id, { type, link }, { new: true });
+        const { type, link, isActive } = req.body;
+        const banner = await Banner.findByIdAndUpdate(id, { type, link, isActive }, { new: true });
         if (!banner) return res.status(404).json({ message: 'Banner not found' });
         res.json({ message: 'Banner updated successfully!', banner });
     } catch (error) {

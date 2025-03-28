@@ -11,8 +11,12 @@ const bannerSchema = new Schema({
     link: {
         type: String,
         required: true
+    },
+    isActive: {
+        type: Boolean,
+        default: true // Default to true (on)
     }
 }, { timestamps: true });
 
 const Banner = mongoose.model('Banner', bannerSchema);
-module.exports = Banner
+module.exports = Banner;
