@@ -135,14 +135,21 @@ const quickLogin = (req, res, next) => {
 
 const getReferredUsers = async (req, res) => {
     try {
-        const { referralCode } = req.query; // Get referral code from query parameters
+        const { phone } = req.query; // Get phone number from query parameters
 
-        if (!referralCode) {
-            return res.status(400).json({ message: 'Referral code is required' });
+        if (!phone) {
+            return res.status(400).json({ message: 'Phone number is required' });
         }
 
-        // Find all users who were referred by the given referral code
-        const referredUsers = await User.find({ referredBy: referralCode }).select('name email hasPurchased rewardGiven');
+        // Find the user with the given phone number
+        const user = await User.findOne({ phone });
+
+        if (!user || !user.referralCode) {
+            return res.status(404).json({ message: 'User not found or no referral code available' });
+        }
+
+        // Use the retrieved referral code to get referred users
+        const referredUsers = await User.find({ referredBy: user.referralCode }).select('name email hasPurchased rewardGiven');
 
         if (referredUsers.length === 0) {
             return res.status(404).json({ message: 'No referred users found' });
@@ -153,6 +160,7 @@ const getReferredUsers = async (req, res) => {
         res.status(500).json({ message: 'An error occurred!', error: error.message });
     }
 };
+
 
 
 module.exports = {
