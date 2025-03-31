@@ -68,6 +68,21 @@ const getOrderById = async (req, res) => {
     }
 };
 
+const getOrdersByPhone = async (req, res) => {
+    try {
+        const { phone } = req.query;
+
+        if (!phone) return res.status(400).json({ message: 'Phone number is required' });
+
+        const orders = await Order.find({ 'customer.phone': phone });
+
+        if (orders.length === 0) return res.status(404).json({ message: 'No orders found for this phone number' });
+
+        res.json({ message: 'Orders retrieved successfully!', orders });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching orders', error: error.message });
+    }
+};
 
 // **4. Update Order Status**
 const updateOrderStatus = async (req, res) => {
@@ -100,6 +115,7 @@ const deleteOrder = async (req, res) => {
 };
 
 module.exports = {
+    getOrdersByPhone,
     createOrder,
     getOrders,
     getOrderById,
