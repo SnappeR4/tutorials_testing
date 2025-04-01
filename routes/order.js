@@ -11,7 +11,7 @@ router.get('/getOrdersByPhone', OrderController.getOrdersByPhone);
 router.get('/all', OrderController.getOrders);
 router.get('/filter', OrderController.filterOrders);
 router.get('/stats', OrderController.getOrderStats);
-router.put('/update-status', OrderController.updateOrderStatus);
+router.put('/update-status/:orderId', OrderController.updateOrderStatus);
 router.put('/update-tracking', OrderController.updateTracking);
 router.put('/:id', OrderController.updateOrder);
 router.delete('/delete', OrderController.deleteOrder);

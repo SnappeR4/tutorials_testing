@@ -105,20 +105,20 @@
           </div>
 
           <!-- In Transit Tab -->
-          <div id="inTransitTab" class="tab-content">
+          <div id="in_transitTab" class="tab-content">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold text-gray-800">
                 <i class="fas fa-truck text-yellow-500 mr-2"></i> Orders In Transit
               </h2>
-              <span id="inTransitCount" class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">0 orders</span>
+              <span id="in_transitCount" class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">0 orders</span>
             </div>
-            <div id="inTransitOrdersList" class="space-y-4">
+            <div id="in_transitOrdersList" class="space-y-4">
               <!-- Orders will be loaded here -->
             </div>
-            <div id="inTransitLoading" class="loading-spinner text-center py-8">
+            <div id="in_transitLoading" class="loading-spinner text-center py-8">
               <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
             </div>
-            <button id="loadMoreInTransit" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg w-full hidden">
+            <button id="loadMoreIn_transit" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg w-full hidden">
               <i class="fas fa-plus-circle mr-1"></i> Load More
             </button>
           </div>
@@ -199,12 +199,12 @@
               <label class="block text-gray-700 text-sm font-bold mb-1">Tracking ID</label>
               <input type="text" id="trackingIdInput" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
-            <button id="markInTransitBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
+            <button id="markin_transitBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
               <i class="fas fa-truck mr-2"></i> Mark as In Transit
             </button>
           </div>
           
-          <div id="inTransitStatusUpdate" class="hidden">
+          <div id="in_transitStatusUpdate" class="hidden">
             <button id="markCompletedBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
               <i class="fas fa-check-circle mr-2"></i> Mark as Completed
             </button>
@@ -409,13 +409,13 @@
       document.getElementById('modalOrderTotal').textContent = `Total: ₹${order.totalAmount.toFixed(2)}`;
       
       document.getElementById('activeStatusUpdate').classList.add('hidden');
-      document.getElementById('inTransitStatusUpdate').classList.add('hidden');
+      document.getElementById('in_transitStatusUpdate').classList.add('hidden');
       
       if (currentStatus === 'active') {
         document.getElementById('activeStatusUpdate').classList.remove('hidden');
-        document.getElementById('markInTransitBtn').onclick = () => updateOrderStatus(order.orderId, 'in_transit');
+        document.getElementById('markin_transitBtn').onclick = () => updateOrderStatus(order.orderId, 'in_transit');
       } else if (currentStatus === 'in_transit') {
-        document.getElementById('inTransitStatusUpdate').classList.remove('hidden');
+        document.getElementById('in_transitStatusUpdate').classList.remove('hidden');
         document.getElementById('markCompletedBtn').onclick = () => updateOrderStatus(order.orderId, 'completed');
       }
       
@@ -437,7 +437,7 @@
       }
       
       try {
-        const response = await fetch(`/api/orders/${orderId}/status`, {
+        const response = await fetch(`/api/order/update-status/${orderId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
