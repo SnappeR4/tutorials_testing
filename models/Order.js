@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const OrderSchema = new mongoose.Schema({
-    orderId: { type: String, unique: true, required: true }, // Unique Order ID
-    date: { type: Date, default: Date.now }, // Order Date
-    time: { type: String, required: true }, // Order Time (HH:mm)
+    orderId: { type: String, unique: true, required: true },
+    date: { type: Date, default: Date.now },
+    time: { type: String, required: true },
     customer: {
         name: { type: String, required: true },
         phone: { type: String, required: true },
@@ -22,7 +23,8 @@ const OrderSchema = new mongoose.Schema({
             name: { type: String, required: true },
             category: { type: String, required: true },
             quantity: { type: Number, required: true },
-            price: { type: Number, required: true }
+            price: { type: Number, required: true },
+            productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
         }
     ],
     subtotal: { type: Number, required: true },
@@ -30,8 +32,18 @@ const OrderSchema = new mongoose.Schema({
     discount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
     trackingId: { type: String, default: '' },
-    status: { type: String, enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
-    expectedDeliveryDate: { type: Date, required: true }
-});
+    status: { 
+        type: String, 
+        enum: ['active', 'Processing', 'in_transit', 'completed', 'Cancelled'], 
+        default: 'active',
+        index: true
+    },
+    expectedDeliveryDate: { type: Date, required: true },
+    paymentMethod: { type: String, enum: ['COD', 'Online'], default: 'COD' },
+    paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' },
+    notes: { type: String, default: '' }
+}, { timestamps: true });
+
+OrderSchema.plugin(mongoosePaginate); // Add pagination plugin
 
 module.exports = mongoose.model('Order', OrderSchema);

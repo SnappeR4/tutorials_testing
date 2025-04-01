@@ -36,6 +36,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.get('/', (req, res) => {
   res.render('index');
 });
+// Remove the verifyAdmin middleware from the orders route
+app.get('/orderspage', (req, res) => {
+    res.render('orders');
+});
 
 const PORT = process.env.PORT || 3000
 

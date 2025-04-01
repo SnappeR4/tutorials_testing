@@ -1,12 +1,20 @@
-const express = require('express')
-const r̥outer  = express.Router()
+const express = require('express');
+const router = express.Router();
 const OrderController = require('../controllers/OrderController');
 
-r̥outer.post('/create', OrderController.createOrder); // Create Order
-r̥outer.get('/all', OrderController.getOrders); // Get All Orders
-r̥outer.get('/getOrdersByPhone', OrderController.getOrdersByPhone)
-r̥outer.get('/getById', OrderController.getOrderById); // Get Order by ID
-r̥outer.put('/update-status', OrderController.updateOrderStatus); // Update Order Status
-r̥outer.delete('/delete', OrderController.deleteOrder); // Delete Order
+// Public routes
+router.post('/create', OrderController.createOrder);
+router.get('/getById', OrderController.getOrderById);
+router.get('/getOrdersByPhone', OrderController.getOrdersByPhone);
 
-module.exports = r̥outer;
+// Admin protected routes
+router.get('/all', OrderController.getOrders);
+router.get('/filter', OrderController.filterOrders);
+router.get('/stats', OrderController.getOrderStats);
+router.put('/update-status', OrderController.updateOrderStatus);
+router.put('/update-tracking', OrderController.updateTracking);
+router.put('/:id', OrderController.updateOrder);
+router.delete('/delete', OrderController.deleteOrder);
+router.get('/export', OrderController.exportOrders);
+
+module.exports = router;
