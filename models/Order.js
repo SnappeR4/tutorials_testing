@@ -44,6 +44,6 @@ const OrderSchema = new mongoose.Schema({
     notes: { type: String, default: '' }
 }, { timestamps: true });
 
-OrderSchema.plugin(mongoosePaginate); // Add pagination plugin
+OrderSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('Order', OrderSchema);
