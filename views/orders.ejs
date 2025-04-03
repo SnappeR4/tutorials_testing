@@ -54,9 +54,14 @@
           <h1 class="text-xl font-bold text-gray-800">
             <i class="fas fa-boxes mr-2 text-blue-500"></i> Orders Management
           </h1>
-          <button id="logoutBtn" class="text-sm text-gray-600 hover:text-blue-600 flex items-center">
-            <i class="fas fa-sign-out-alt mr-1"></i> Lock Dashboard
-          </button>
+          <div class="flex items-center space-x-4">
+            <button id="couponsBtn" class="text-sm text-gray-600 hover:text-purple-600 flex items-center">
+              <i class="fas fa-tag mr-1"></i> Coupons
+            </button>
+            <button id="logoutBtn" class="text-sm text-gray-600 hover:text-blue-600 flex items-center">
+              <i class="fas fa-sign-out-alt mr-1"></i> Lock Dashboard
+            </button>
+          </div>
         </div>
 
         <!-- Tabs Navigation -->
@@ -451,6 +456,9 @@
       document.getElementById('orderModal').classList.add('hidden');
     });
 
+    document.getElementById('couponsBtn').addEventListener('click', () => {
+      window.location.href = '/coupons';
+    });
     async function updateOrderStatus(orderId, newStatus) {
       const trackingId = newStatus === 'in_transit' 
         ? document.getElementById('trackingIdInput').value.trim()

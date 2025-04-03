@@ -41,6 +41,9 @@ app.get('/', (req, res) => {
 app.get('/orderspage', (req, res) => {
     res.render('orders');
 });
+app.get('/coupons', (req, res) => {
+    res.render('coupon');
+});
 
 const PORT = process.env.PORT || 3000
 
