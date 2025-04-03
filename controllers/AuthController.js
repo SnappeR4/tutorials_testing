@@ -144,23 +144,37 @@ const getReferredUsers = async (req, res) => {
         // Find the user with the given phone number
         const user = await User.findOne({ phone });
 
-        if (!user || !user.referralCode) {
-            return res.status(404).json({ message: 'User not found or no referral code available' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!user.referralCode) {
+            return res.status(404).json({ 
+                message: 'No referral code available for this user',
+                referralCode: null,
+                referredUsers: []
+            });
         }
 
         // Use the retrieved referral code to get referred users
-        const referredUsers = await User.find({ referredBy: user.referralCode }).select('name email hasPurchased rewardGiven');
+        const referredUsers = await User.find({ referredBy: user.referralCode })
+            .select('name email hasPurchased rewardGiven');
 
-        if (referredUsers.length === 0) {
-            return res.status(404).json({ message: 'No referred users found' });
-        }
-
-        res.json({ message: 'Referred users retrieved successfully!', referredUsers });
+        res.json({ 
+            message: referredUsers.length > 0 
+                ? 'Referred users retrieved successfully!' 
+                : 'No referred users found',
+            referralCode: user.referralCode,
+            referredUsers,
+            hasReferralCode: !!user.referralCode
+        });
     } catch (error) {
-        res.status(500).json({ message: 'An error occurred!', error: error.message });
+        res.status(500).json({ 
+            message: 'An error occurred!', 
+            error: error.message 
+        });
     }
 };
-
 
 
 module.exports = {
