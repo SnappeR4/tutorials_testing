@@ -39,8 +39,8 @@ const OrderSchema = new mongoose.Schema({
         index: true
     },
     expectedDeliveryDate: { type: Date, required: true },
-    paymentMethod: { type: String, enum: ['COD', 'Online'], default: 'COD' },
-    paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' },
+    paymentMethod: { type: String, enum: ['COD', 'Online'], default: 'Online' },
+    paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Paid' },
     notes: { type: String, default: '' }
 }, { timestamps: true });
 
