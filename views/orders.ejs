@@ -230,7 +230,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const ADMIN_PASSWORD = "R@hul4444";
     const passwordSection = document.getElementById('passwordSection');
     const ordersDashboard = document.getElementById('ordersDashboard');
     const verifyPasswordBtn = document.getElementById('verifyPasswordBtn');
@@ -251,17 +250,31 @@
       if (e.key === 'Enter') verifyPassword();
     });
 
-    function verifyPassword() {
-      if (passwordInput.value === ADMIN_PASSWORD) {
-        sessionStorage.setItem('adminAuthenticated', 'true');
+      async function verifyPassword() {
+        try {
+            const response = await fetch('/api/verify-admin-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: passwordInput.value })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('adminAuthenticated', 'true');
         passwordSection.classList.add('hidden');
         ordersDashboard.classList.remove('hidden');
         passwordError.classList.add('hidden');
         initializeOrdersDashboard();
-      } else {
-        passwordError.classList.remove('hidden');
-        passwordInput.focus();
-      }
+            } else {
+              passwordError.classList.remove('hidden');
+              passwordInput.focus();
+            }
+        } catch (error) {
+          passwordError.classList.remove('hidden');
+          passwordInput.focus();
+        }
     }
 
     // Logout functionality
@@ -402,7 +415,7 @@
       document.getElementById('modalOrderId').textContent = order.orderId;
       document.getElementById('modalCustomerName').textContent = order.customer.name;
       document.getElementById('modalCustomerPhone').textContent = order.customer.phone;
-      document.getElementById('modalCustomerGSTIN').textContent = order.customer.gstin;
+      document.getElementById('modalCustomerGSTIN').textContent = "GSTIN: "+order.customer.gstin;
       // document.getElementById('modalCustomerAddress').textContent = 
       //   `${order.customer.address?.houseFloor || ''} ${order.customer.address?.buildingBlock || ''}, ${order.customer.address?.city || ''}`;
       
