@@ -21,4 +21,6 @@ router.delete('/:id', couponController.deleteCoupon);
 // Record coupon usage
 router.post('/use', couponController.recordCouponUsage);
 
+router.get('/scratch-card/:phone', couponController.getScratchCardStatus);
+
 module.exports = router;

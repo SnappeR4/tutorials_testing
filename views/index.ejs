@@ -911,61 +911,66 @@ function renderTemplates(templates) {
 
       //users
       function fetchUsers(from, to) {
-            let url = "/api/users";
-            if (from && to) {
-                url += `?from=${from}&to=${to}`;
-            }
+          let url = "/api/users";
+          if (from && to) {
+              url += `?from=${from}&to=${to}`;
+          }
 
-            fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
-                if (!Array.isArray(data)) {
-                throw new Error("Invalid response format. Expected an array.");
-                }
+          fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+              if (!Array.isArray(data)) {
+                  throw new Error("Invalid response format. Expected an array.");
+              }
 
-                const userList = document.getElementById("user-list");
-                userList.innerHTML = ""; // Clear previous content
+              const userList = document.getElementById("user-list");
+              userList.innerHTML = ""; // Clear previous content
 
-                if (data.length === 0) {
-                userList.innerHTML = "<p>No users found.</p>";
-                return;
-                }
+              if (data.length === 0) {
+                  userList.innerHTML = "<p>No users found.</p>";
+                  return;
+              }
 
-                // Create table
-                const table = document.createElement("table");
-                table.style.width = "100%";
-                table.style.borderCollapse = "collapse";
+              // Create table
+              const table = document.createElement("table");
+              table.style.width = "100%";
+              table.style.borderCollapse = "collapse";
 
-                table.innerHTML = `
-                <thead>
-                    <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Name</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Email</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Phone</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                `;
+              table.innerHTML = `
+              <thead>
+                  <tr>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Name</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Email</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Phone</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Joining Date</th>
+                  </tr>
+              </thead>
+              <tbody></tbody>
+              `;
 
-                const tbody = table.querySelector("tbody");
+              const tbody = table.querySelector("tbody");
 
-                data.forEach((user) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td style="border: 1px solid #ddd; padding: 8px;">${user.name}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${user.email}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${user.phone}</td>
-                `;
-                tbody.appendChild(row);
-                });
+              data.forEach((user) => {
+                  // Format the date to dd-mm-yy
+                  const joinDate = new Date(user.createdAt);
+                  const formattedDate = `${String(joinDate.getDate()).padStart(2, '0')}-${String(joinDate.getMonth() + 1).padStart(2, '0')}-${String(joinDate.getFullYear()).slice(-2)}`;
+                  
+                  const row = document.createElement("tr");
+                  row.innerHTML = `
+                      <td style="border: 1px solid #ddd; padding: 8px;">${user.name}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">${user.email}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">${user.phone}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">${formattedDate}</td>
+                  `;
+                  tbody.appendChild(row);
+              });
 
-                userList.appendChild(table);
-            })
-            .catch((error) => {
-                alert("Failed to fetch users: " + error.message);
-            });
-
-        }
+              userList.appendChild(table);
+          })
+          .catch((error) => {
+              alert("Failed to fetch users: " + error.message);
+          });
+      }
         // Filter users by date range
         function filterUsers() {
             const fromDate = document.getElementById("from-date").value;

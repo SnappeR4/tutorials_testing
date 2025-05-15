@@ -10,7 +10,7 @@ const couponSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['referral', 'regular'],
+    enum: ['referral', 'regular', 'scratch'],
     required: true
   },
   discountAmount: {
