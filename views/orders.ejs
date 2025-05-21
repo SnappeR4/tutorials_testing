@@ -449,6 +449,7 @@
     }
 
     function showOrderDetails(order, currentStatus) {
+      console.log("Full Order Object:", order);
       const modal = document.getElementById('orderModal');
       document.getElementById('modalOrderId').textContent = order.orderId;
       document.getElementById('modalCustomerName').textContent = order.customer.name;
@@ -501,7 +502,7 @@
           }
         };
       } else if (currentStatus === 'processing') {
-document.getElementById('processingStatusUpdate').classList.remove('hidden');
+        document.getElementById('processingStatusUpdate').classList.remove('hidden');
         document.getElementById('markin_transitBtn').onclick = () => updateOrderStatus(order.orderId, 'in_transit');
         // Cancel Order button
         document.getElementById('cancelOrderBtn').onclick = () => {
@@ -542,6 +543,7 @@ document.getElementById('processingStatusUpdate').classList.remove('hidden');
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             status: newStatus,
+            notes: 'Payment Done',
             trackingId
           })
         });

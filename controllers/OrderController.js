@@ -233,60 +233,147 @@ const getOrderStats = async (req, res) => {
 
 // 5. Update Order Status (Enhanced with validation)
 const updateOrderStatus = async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const { status, trackingId, notes } = req.body;
+    // Debug: Log the complete incoming request
+    console.log('Incoming request:', {
+        method: req.method,
+        url: req.originalUrl,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+        headers: {
+            'content-type': req.headers['content-type'],
+            authorization: req.headers.authorization ? 'present' : 'missing'
+        }
+    });
 
-        if (!orderId || !status) {
+    try {
+        // Get orderId from both params and query for compatibility
+        const orderId = req.params.orderId || req.query.id;
+        
+        if (!orderId) {
+            console.error('Missing orderId');
             return res.status(400).json({
                 success: false,
-                message: 'Order ID and status are required'
+                message: 'Order ID is required',
+                received: {
+                    params: req.params,
+                    query: req.query
+                }
             });
         }
+
+        const { status, trackingId, notes } = req.body;
+
+        if (!status) {
+            console.error('Missing status for order:', orderId);
+            return res.status(400).json({
+                success: false,
+                message: 'Status is required',
+                receivedBody: req.body
+            });
+        }
+
+        // Debug: Log the received data
+        console.log('Processing update for order:', orderId, 'with data:', {
+            status,
+            trackingId,
+            notes
+        });
 
         const validStatuses = ['active', 'Processing', 'in_transit', 'completed', 'Cancelled'];
         if (!validStatuses.includes(status)) {
+            console.error('Invalid status:', status, 'for order:', orderId);
             return res.status(400).json({
                 success: false,
-                message: 'Invalid status value'
+                message: 'Invalid status value',
+                validStatuses,
+                receivedStatus: status
             });
         }
 
-        const updateData = { status };
-        if (trackingId) updateData.trackingId = trackingId;
-        if (notes) updateData.notes = notes;
+        // Build update object
+        const updateData = { 
+            status,
+            updatedAt: new Date()
+        };
+
+        // Explicitly handle notes - update even if empty string
+        if (notes !== undefined) {
+            updateData.notes = notes;
+        }
+
+        if (trackingId !== undefined) {
+            updateData.trackingId = trackingId;
+        }
+
+        // Debug: Log the final update data
+        console.log('Final update data for order', orderId, ':', updateData);
+
+        // Perform the update with additional options
+        const updateOptions = {
+            new: true,
+            runValidators: true,
+            context: 'query', // Needed for some validations
+            setDefaultsOnInsert: true
+        };
 
         const order = await Order.findOneAndUpdate(
-            { orderId },
+            { orderId: orderId },
             updateData,
-            { new: true }
-        );
+            updateOptions
+        ).lean();
 
         if (!order) {
+            console.error('Order not found:', orderId);
             return res.status(404).json({
                 success: false,
-                message: 'Order not found'
+                message: 'Order not found',
+                searchedOrderId: orderId
             });
         }
 
-        // Send status update notification
-        // sendOrderStatusEmail(order.customer.email, order.orderId, 'status-update', status);
+        // Debug: Verify the updated document
+        const verifiedUpdate = await Order.findOne({ orderId: orderId }).lean();
+        console.log('Verified updated order:', verifiedUpdate);
 
-        res.json({
+        return res.json({
             success: true,
-            message: 'Order status updated successfully',
-            order
+            message: 'Order updated successfully',
+            order: verifiedUpdate // Return the verified document
         });
+
     } catch (error) {
-        console.error('Error updating order status:', error);
-        res.status(500).json({
+        console.error('Update failed:', {
+            error: error.message,
+            stack: error.stack,
+            fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
+        });
+
+        // Handle specific MongoDB errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: error.errors
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid data format',
+                error: error.message
+            });
+        }
+
+        return res.status(500).json({
             success: false,
-            message: 'Error updating order status',
-            error: error.message
+            message: 'Internal server error',
+            error: error.message,
+            errorType: error.name
         });
     }
 };
-
 // 6. Update Tracking Information
 const updateTracking = async (req, res) => {
     try {
