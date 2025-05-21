@@ -70,6 +70,9 @@
             <button data-tab="active" class="tab-btn active mr-8 py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
               <i class="fas fa-clock mr-1"></i> Active Orders
             </button>
+            <button data-tab="processing" class="tab-btn mr-8 py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                <i class="fas fa-cog mr-1"></i> Processing
+            </button>
             <button data-tab="in_transit" class="tab-btn mr-8 py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
               <i class="fas fa-truck mr-1"></i> In Transit
             </button>
@@ -107,6 +110,25 @@
             <button id="loadMoreActive" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg w-full hidden">
               <i class="fas fa-plus-circle mr-1"></i> Load More
             </button>
+          </div>
+
+          <!-- Processing Tab -->
+          <div id="processingTab" class="tab-content">
+              <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-semibold text-gray-800">
+                      <i class="fas fa-cog text-purple-500 mr-2"></i> Processing Orders
+                  </h2>
+                  <span id="processingCount" class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">0 orders</span>
+              </div>
+              <div id="processingOrdersList" class="space-y-4">
+                  <!-- Orders will be loaded here -->
+              </div>
+              <div id="processingLoading" class="loading-spinner text-center py-8">
+                  <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+              </div>
+              <button id="loadMoreProcessing" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg w-full hidden">
+                  <i class="fas fa-plus-circle mr-1"></i> Load More
+              </button>
           </div>
 
           <!-- In Transit Tab -->
@@ -186,6 +208,7 @@
               <p id="modalOrderDate" class="text-gray-800"></p>
               <p id="modalOrderStatus" class="text-gray-800"></p>
               <p id="modalTrackingId" class="text-gray-800"></p>
+              <p id="modalOrderNotes" class="text-gray-800"></p>
             </div>
           </div>
         </div>
@@ -200,10 +223,23 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Fixed Footer with Action Buttons -->
       <div id="statusUpdateSection" class="p-6 pt-0 border-t border-gray-200 flex-shrink-0">
+        <!-- Active Order Actions -->
         <div id="activeStatusUpdate" class="hidden space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <button id="markProcessingBtn" class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
+              <i class="fas fa-cog mr-2"></i> Mark as Processing
+            </button>
+            <button id="cancelOrderBtn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
+              <i class="fas fa-times-circle mr-2"></i> Cancel Order
+            </button>
+          </div>
+        </div>
+        
+        <!-- Processing Order Actions -->
+        <div id="processingStatusUpdate" class="hidden space-y-3">
           <div class="mb-3">
             <label class="block text-gray-700 text-sm font-bold mb-1">Tracking ID</label>
             <input type="text" id="trackingIdInput" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -212,8 +248,8 @@
             <button id="markin_transitBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
               <i class="fas fa-truck mr-2"></i> Mark as In Transit
             </button>
-            <button id="cancelOrderBtn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
-              <i class="fas fa-times-circle mr-2"></i> Cancel Order
+            <button id="markActiveBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded transition duration-200 flex items-center justify-center">
+              <i class="fas fa-undo mr-2"></i> Revert to Active
             </button>
           </div>
         </div>
@@ -263,10 +299,10 @@
             if (true) {
                 sessionStorage.setItem('adminAuthenticated', 'true');
                 sessionStorage.setItem('adminAuthenticated', 'true');
-        passwordSection.classList.add('hidden');
-        ordersDashboard.classList.remove('hidden');
-        passwordError.classList.add('hidden');
-        initializeOrdersDashboard();
+                passwordSection.classList.add('hidden');
+                ordersDashboard.classList.remove('hidden');
+                passwordError.classList.add('hidden');
+                initializeOrdersDashboard();
             } else {
               passwordError.classList.remove('hidden');
               passwordInput.focus();
@@ -338,40 +374,42 @@
     const ordersListElement = document.getElementById(`${status}OrdersList`);
     const loadMoreButton = document.getElementById(`loadMore${status.charAt(0).toUpperCase() + status.slice(1)}`);
     
-    if (reset) ordersListElement.innerHTML = '';
-    
-    loadingElement.classList.add('active');
-    loadMoreButton.classList.add('hidden');
-    
-    try {
-        const response = await fetch(`/api/order/all?status=${status}&search=${searchTerm}&page=${page}`);
-        if (!response.ok) throw new Error(await response.text());
+        if (reset) ordersListElement.innerHTML = '';
         
-        const data = await response.json();
+        loadingElement.classList.add('active');
+        loadMoreButton.classList.add('hidden');
         
-        if (data.success && data.data?.docs?.length > 0) {
-            data.data.docs.forEach(order => {
-                ordersListElement.appendChild(createOrderCard(order, status));
-            });
+        try {
+          const apiStatus = status === 'processing' ? 'Processing' : status;
+
+            const response = await fetch(`/api/order/all?status=${apiStatus}&search=${searchTerm}&page=${page}`);
+            if (!response.ok) throw new Error(await response.text());
             
-            document.getElementById(`${status}Count`).textContent = 
-                `${data.data.totalDocs} ${data.data.totalDocs === 1 ? 'order' : 'orders'}`;
+            const data = await response.json();
             
-            if (data.data.hasNextPage) {
-                loadMoreButton.onclick = () => loadOrders(status, page + 1);
-                loadMoreButton.classList.remove('hidden');
+            if (data.success && data.data?.docs?.length > 0) {
+                data.data.docs.forEach(order => {
+                    ordersListElement.appendChild(createOrderCard(order, status));
+                });
+                
+                document.getElementById(`${status}Count`).textContent = 
+                    `${data.data.totalDocs} ${data.data.totalDocs === 1 ? 'order' : 'orders'}`;
+                
+                if (data.data.hasNextPage) {
+                    loadMoreButton.onclick = () => loadOrders(status, page + 1);
+                    loadMoreButton.classList.remove('hidden');
+                }
+            } else if (page === 1) {
+                ordersListElement.innerHTML = '<p class="text-gray-500 text-center py-8">No orders found</p>';
+                document.getElementById(`${status}Count`).textContent = '0 orders';
             }
-        } else if (page === 1) {
-            ordersListElement.innerHTML = '<p class="text-gray-500 text-center py-8">No orders found</p>';
-            document.getElementById(`${status}Count`).textContent = '0 orders';
+        } catch (error) {
+            console.error('Error loading orders:', error);
+            ordersListElement.innerHTML = '<p class="text-red-500 text-center py-8">Error loading orders</p>';
+        } finally {
+            loadingElement.classList.remove('active');
         }
-    } catch (error) {
-        console.error('Error loading orders:', error);
-        ordersListElement.innerHTML = '<p class="text-red-500 text-center py-8">Error loading orders</p>';
-    } finally {
-        loadingElement.classList.remove('active');
     }
-}
 
     function createOrderCard(order, status) {
       const card = document.createElement('div');
@@ -432,7 +470,10 @@
       document.getElementById('modalOrderDate').textContent = `Placed on: ${new Date(order.date).toLocaleString()}`;
       document.getElementById('modalOrderStatus').textContent = `Status: ${currentStatus.replace('_', ' ')}`;
       document.getElementById('modalTrackingId').textContent = order.trackingId ? `Tracking: ${order.trackingId}` : '';
-      
+      document.getElementById('modalOrderNotes').textContent = order.notes ? `Notes: ${order.notes}` : '';
+
+      document.getElementById('trackingIdInput').value = '';
+
       const itemsContainer = document.getElementById('modalOrderItems');
       itemsContainer.innerHTML = '';
       order.products.forEach(item => {
@@ -448,17 +489,28 @@
       document.getElementById('modalOrderTotal').textContent = `Total: ₹${order.totalAmount.toFixed(2)}`;
       
       document.getElementById('activeStatusUpdate').classList.add('hidden');
+      document.getElementById('processingStatusUpdate').classList.add('hidden');
       document.getElementById('in_transitStatusUpdate').classList.add('hidden');
       
       if (currentStatus === 'active') {
         document.getElementById('activeStatusUpdate').classList.remove('hidden');
-        document.getElementById('markin_transitBtn').onclick = () => updateOrderStatus(order.orderId, 'in_transit');
-        // Cancel Order button
+        document.getElementById('markProcessingBtn').onclick = () => updateOrderStatus(order.orderId, 'Processing');
         document.getElementById('cancelOrderBtn').onclick = () => {
           if (confirm('Are you sure you want to cancel this order?')) {
             updateOrderStatus(order.orderId, 'Cancelled');
           }
-    };
+        };
+      } else if (currentStatus === 'processing') {
+document.getElementById('processingStatusUpdate').classList.remove('hidden');
+        document.getElementById('markin_transitBtn').onclick = () => updateOrderStatus(order.orderId, 'in_transit');
+        // Cancel Order button
+        document.getElementById('cancelOrderBtn').onclick = () => {
+              if (confirm('Are you sure you want to cancel this order?')) {
+                updateOrderStatus(order.orderId, 'Cancelled');
+              }
+        };
+        
+        document.getElementById('markActiveBtn').onclick = () => updateOrderStatus(order.orderId, 'active');
       } else if (currentStatus === 'in_transit') {
         document.getElementById('in_transitStatusUpdate').classList.remove('hidden');
         document.getElementById('markCompletedBtn').onclick = () => updateOrderStatus(order.orderId, 'completed');
@@ -501,8 +553,14 @@
           const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
           loadOrders(activeTab, 1, true);
           
-          if (activeTab === 'active' && newStatus === 'in_transit') {
+          if (activeTab === 'active' && newStatus === 'Processing') {
+            document.querySelector('[data-tab="processing"]').click();
+          } else if (activeTab === 'Processing' && newStatus === 'in_transit') {
             document.querySelector('[data-tab="in_transit"]').click();
+          } else if (activeTab === 'in_transit' && newStatus === 'completed') {
+            document.querySelector('[data-tab="completed"]').click();
+          } else if (newStatus === 'active') {
+            document.querySelector('[data-tab="active"]').click();
           }
         } else {
           const error = await response.json();
