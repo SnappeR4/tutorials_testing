@@ -41,10 +41,11 @@ exports.validateCoupon = async (req, res) => {
     
     // Additional validation for scratch cards
     if (coupon.type === 'scratch') {
-      // Check if user has already used this scratch card
+      // Check if user has already used this scratch card in a non-active order
       const existingOrder = await Order.findOne({
         'customer.phone': phone,
-        couponCode: code
+        couponCode: code,
+        status: { $ne: 'active' }
       });
       
       if (existingOrder) {
