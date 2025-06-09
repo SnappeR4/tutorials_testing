@@ -15,6 +15,8 @@ const OrderRoutes = require('./routes/order');
 const couponRoutes = require('./routes/coupon');
 const productRoutes = require('./routes/productRoutes');
 const colorRoutes = require('./routes/colorRoutes');
+const walletUserRoutes = require('./routes/walletUserRoutes');
+const walletTransactionRoutes = require('./routes/walletTransactionRoutes');
 
 mongoose.connect(process.env.MONGO_URL);
 const db = mongoose.connection;
@@ -79,6 +81,8 @@ app.use('/api/order', OrderRoutes);
 app.use('/api/coupon', couponRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/colors', colorRoutes);
+app.use('/api/walletuser', walletUserRoutes);
+app.use('/api/wallettransaction', walletTransactionRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('Server is running on port ' + PORT);
