@@ -55,6 +55,9 @@
             <i class="fas fa-boxes mr-2 text-blue-500"></i> Orders Management
           </h1>
           <div class="flex items-center space-x-4">
+            <button id="usersBtn" class="text-sm text-gray-600 hover:text-purple-600 flex items-center">
+              <i class="fas fa-user mr-1"></i> Users
+            </button>
             <button id="couponsBtn" class="text-sm text-gray-600 hover:text-purple-600 flex items-center">
               <i class="fas fa-tag mr-1"></i> Coupons
             </button>
@@ -526,6 +529,10 @@
 
     document.getElementById('couponsBtn').addEventListener('click', () => {
       window.location.href = '/coupons';
+    });
+
+    document.getElementById('usersBtn').addEventListener('click', () => {
+      window.location.href = '/users';
     });
     async function updateOrderStatus(orderId, newStatus) {
       const trackingId = newStatus === 'in_transit' 

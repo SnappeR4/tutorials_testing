@@ -59,6 +59,13 @@ app.get('/coupons', (req, res) => {
     res.render('coupon');
 });
 
+app.get('/users', (req, res) => {
+    res.render('users');
+});
+
+app.get('/sells_users', (req, res) => {
+    res.render('sells_users');
+});
 // Add the password verification route directly to app
 app.post('/api/verify-admin-password', (req, res) => {
     const { password } = req.body;
